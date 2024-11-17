@@ -136,7 +136,7 @@ for week, (game_days, game_time) in enumerate(zip(napoli_games.values(), game_ti
 
 # 7. Constraint that the 12 hours of opening must always be covered
 for d in range(days):
-    solver.add(Sum([schedule[e][d] for e in employees]) >= 12)  # 12 ore di apertura coperte ogni giorno
+    solver.add(Sum([schedule[e][d] for e in employees]) >= 12)  # 12 hours of covered opening every day
 
 # Solve
 if solver.check() == sat:
