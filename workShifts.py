@@ -148,7 +148,52 @@ else:
     print("No solution found.")
 
 
+""""
+Problem to solve: display otput not in working hours per day but in time winows. Output: No solution Found!
 
+from z3 import *
+
+# Constants
+days = 28  # 4 weeks of 7 days
+shifts = 12  # 12-hour shifts
+employees = ["N", "V", "G", "D"]
+hours_per_week = {"N": 24, "V": 24, "G": 40, "D": 40}
+shop_opening_time = 8  # Shop opens at 8 am
+
+# Solver
+solver = Solver()
+
+# Variables
+schedule = {e: [Int(f"{e}_{d}") for d in range(days)] for e in employees}
+start_time = {e: [Int(f"{e}_start_{d}") for d in range(days)] for e in employees}
+end_time = {e: [Int(f"{e}_end_{d}") for d in range(days)] for e in employees}
+
+
+# Constraints
+for e in employees:
+    for d in range(days):
+        # Each shift is between 0 and 12 hours
+        solver.add(schedule[e][d] >= 0, schedule[e][d] <= shifts)
+        # Start time is between shop opening time and closing time - shift duration
+        solver.add(start_time[e][d] >= shop_opening_time, start_time[e][d] <= 20 - schedule[e][d])
+        # End time is start time + shift duration
+        solver.add(end_time[e][d] == start_time[e][d] + schedule[e][d])
+
+# 1. Weekly hours for each employee
+# ... (rest of your constraints remain the same)
+
+# Solve
+if solver.check() == sat:
+    model = solver.model()
+    for e in employees:
+        print(f"Schedule for {e}:")
+        for d in range(days):
+            start = model[start_time[e][d]].as_long()
+            end = model[end_time[e][d]].as_long()
+            print(f"Day {d+1}: {start}:00 - {end}:00") 
+else:
+    print("No solution found.")
+""""
 
 
 
