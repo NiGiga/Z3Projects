@@ -75,7 +75,7 @@ for e, weekly_hours in hours_per_week.items():
     for week in range(4):  # 4 weeks
         solver.add(Sum(schedule[e][week * 7: (week + 1) * 7]) == weekly_hours)
 
-# 2. Daily work limits for N and V (24 hours per week, shifts of max 4 hours/day)
+# 2. Daily work limits for N and V (24 hours per week, shifts of max 4 hours/day) #TODO 2 loops one to each person and merge whit specific costrains 
 for e in ["N", "V"]:
     for week in range(4):
         week_schedule = schedule[e][week * 7: (week + 1) * 7]
