@@ -1,57 +1,46 @@
 from z3 import *
 
-def hamiltonian_path(graph, n):
-    """
-    Solves the Hamiltonian Path problem for a given graph.
+# Distances between 5 cities, defined in a symmetric matrix
+distances = [
+    [0, 10, 15, 20, 25],
+    [10, 0, 35, 25, 30],
+    [15, 35, 0, 30, 20],
+    [20, 25, 30, 0, 15],
+    [25, 30, 20, 15, 0]
+]
 
-    Args:
-        graph (list of tuples): List of edges (u, v) representing the graph.
-        n (int): Number of nodes in the graph.
+# Number of nodes
+n_city = len(distances)
 
-    Returns:
-        list: A sequence of nodes representing the Hamiltonian path, if it exists.
-        None: If no Hamiltonian path exists.
-    """
-    # Create a Z3 Solver
-    s = Solver()
+# Solver
+solver = Solver()
 
-    # Decision variables: position[i] represents the node at position i in the path
-    position = [Int(f'pos_{i}') for i in range(n)]
+# Variables: Each city occupies a different position in the path
+city = [Int(f'city_{i}') for i in range(n_city)]
 
-    # Constraint 1: Each position must contain a valid node (between 0 and n-1)
-    s.add([And(position[i] >= 0, position[i] < n) for i in range(n)])
+# Constraints (1): Each city must be visited exactly once
+solver.add([And(city[i] >= 0, city[i] < n_city) for i in range(n_city)])
 
-    # Constraint 2: All nodes in the path must be distinct (no repetition)
-    s.add(Distinct(position))
+# Constraint (2): All cities must be distinct
+solver.add(Distinct(city))
 
-    # Constraint 3: Consecutive nodes in the path must be connected by an edge
-    edge_set = set(graph)  # Use a set for efficient lookup
-    for i in range(n - 1):
-        u = position[i]
-        v = position[i + 1]
-        # Ensure that (u, v) or (v, u) is a valid edge in the graph
-        s.add(Or([And(u == e[0], v == e[1]) for e in edge_set] +
-                 [And(u == e[1], v == e[0]) for e in edge_set]))
+# Constraint (3): Consecutive cities must be connected (non-infinite distance)
+for i in range(n_city - 1):  # No cyclic condition here
+    solver.add(Or([And(city[i] == a, city[i + 1] == b,
+                       distances[a][b] > 0) for a in range(n_city)
+                   for b in range(n_city)]))
 
-    # Solve the problem
-    if s.check() == sat:
-        model = s.model()  # Extract the solution model
-        # Extract the path from the model as a list of integers
-        path = [model.eval(position[i]).as_long() for i in range(n)]
-        return path
-    else:
-        return None  # No Hamiltonian path found
+# Solve the problem
+if solver.check() == sat:
+    model = solver.model()
 
-# Example usage
-if __name__ == "__main__":
-    # Define the graph as a list of edges
-    graph = [(0, 1), (1, 2), (2, 3), (3, 0), (0, 2), (1, 3)]
-    n = 4  # Number of nodes in the graph
+    # Variable evaluation to obtain the path
+    path = [model.evaluate(city[i]).as_long() for i in range(n_city)]
 
-    # Find the Hamiltonian path
-    result = hamiltonian_path(graph, n)
+    # Total distance calculation
+    calc_distance = sum(distances[path[i]][path[i + 1]] for i in range(n_city - 1))
 
-    if result:
-        print("Hamiltonian Path found:", result)
-    else:
-        print("No Hamiltonian Path exists.")
+    print("Hamiltonian Path: ", path)  # Example: [0, 2, 4, 3, 1]
+    print("Total distance: ", calc_distance)  # Example: 80
+else:
+    print("No Hamiltonian Path exists!")
