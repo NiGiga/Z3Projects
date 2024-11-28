@@ -1,46 +1,63 @@
 from z3 import *
 
-# Distances between 5 cities, defined in a symmetric matrix
-distances = [
-    [0, 10, 15, 20, 25],
-    [10, 0, 35, 25, 30],
-    [15, 35, 0, 30, 20],
-    [20, 25, 30, 0, 15],
-    [25, 30, 20, 15, 0]
-]
+def hamiltonian_path(cities, graph, n):
+    """
+    Risolve il problema del cammino Hamiltoniano per un grafo dato di città.
 
-# Number of nodes
-n_city = len(distances)
+    Args:
+        cities (list): Lista di città etichettate da 0 a n-1.
+        graph (list of tuples): Lista di archi (u, v) che rappresentano il grafo delle città.
+        n (int): Numero di città nel grafo.
 
-# Solver
-solver = Solver()
+    Returns:
+        list: Una sequenza di città che rappresenta il cammino Hamiltoniano, se esiste.
+        None: Se il cammino non esiste.
+    """
+    # Crea un Solver
+    s = Solver()
 
-# Variables: Each city occupies a different position in the path
-city = [Int(f'city_{i}') for i in range(n_city)]
+    # Variabili di decisione: posizione[i] è la città nella posizione i del cammino
+    position = [Int(f'pos_{i}') for i in range(n)]
 
-# Constraints (1): Each city must be visited exactly once
-solver.add([And(city[i] >= 0, city[i] < n_city) for i in range(n_city)])
+    # Ogni posizione deve contenere una città valida (da 0 a n-1)
+    s.add([And(position[i] >= 0, position[i] < n) for i in range(n)])
 
-# Constraint (2): All cities must be distinct
-solver.add(Distinct(city))
+    # Le città nel cammino devono essere tutte diverse
+    s.add(Distinct(position))
 
-# Constraint (3): Consecutive cities must be connected (non-infinite distance)
-for i in range(n_city - 1):  # No cyclic condition here
-    solver.add(Or([And(city[i] == a, city[i + 1] == b,
-                       distances[a][b] > 0) for a in range(n_city)
-                   for b in range(n_city)]))
+    # Collegamenti tra città: ogni città i deve essere connessa alla città i+1 nel cammino
+    edge_set = set(graph)  # Usa un set per un accesso rapido
+    for i in range(n - 1):
+        u = position[i]
+        v = position[i + 1]
+        s.add(Or([And(u == e[0], v == e[1]) for e in edge_set] +
+                 [And(u == e[1], v == e[0]) for e in edge_set]))
 
-# Solve the problem
-if solver.check() == sat:
-    model = solver.model()
+    # Risolvi il problema
+    if s.check() == sat:
+        model = s.model()
+        path = [model.eval(position[i]).as_long() for i in range(n)]
+        # Restituisci il cammino delle città (in ordine)
+        return [cities[i] for i in path]
+    else:
+        return None
 
-    # Variable evaluation to obtain the path
-    path = [model.evaluate(city[i]).as_long() for i in range(n_city)]
+# Esempio di utilizzo
+if __name__ == "__main__":
+    # Definizione delle città (in questo caso 5 città)
+    cities = ["Roma", "Milano", "Firenze", "Napoli", "Venezia"]
 
-    # Total distance calculation
-    calc_distance = sum(distances[path[i]][path[i + 1]] for i in range(n_city - 1))
+    # Definizione del grafo come lista di archi (le connessioni tra le città)
+    graph = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0),  # Connessioni cicliche
+             (0, 2), (1, 3), (2, 4), (0, 3), (1, 4)]  # Connessioni aggiuntive
 
-    print("Hamiltonian Path: ", path)  # Example: [0, 2, 4, 3, 1]
-    print("Total distance: ", calc_distance)  # Example: 80
-else:
-    print("No Hamiltonian Path exists!")
+    # Numero di città
+    n = len(cities)
+
+    # Trova il cammino Hamiltoniano
+    result = hamiltonian_path(cities, graph, n)
+
+    if result:
+        print("Cammino Hamiltoniano trovato:", result)
+    else:
+        print("Nessun cammino Hamiltoniano trovato.")
