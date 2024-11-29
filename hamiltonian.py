@@ -1,4 +1,5 @@
 from z3 import *
+import time  # Importa il modulo per misurare il tempo
 
 def hamiltonian_path(cities, graph, n):
     """
@@ -33,14 +34,19 @@ def hamiltonian_path(cities, graph, n):
         s.add(Or([And(u == e[0], v == e[1]) for e in edge_set] +
                  [And(u == e[1], v == e[0]) for e in edge_set]))
 
+    # Inizia a misurare il tempo di esecuzione
+    start_time = time.time()
+
     # Risolvi il problema
     if s.check() == sat:
         model = s.model()
         path = [model.eval(position[i]).as_long() for i in range(n)]
         # Restituisci il cammino delle città (in ordine)
-        return [cities[i] for i in path]
+        execution_time = time.time() - start_time  # Calcola il tempo di esecuzione
+        return [cities[i] for i in path], execution_time
     else:
-        return None
+        execution_time = time.time() - start_time  # Calcola il tempo di esecuzione
+        return None, execution_time
 
 # Esempio di utilizzo
 if __name__ == "__main__":
@@ -55,9 +61,11 @@ if __name__ == "__main__":
     n = len(cities)
 
     # Trova il cammino Hamiltoniano
-    result = hamiltonian_path(cities, graph, n)
+    result, execution_time = hamiltonian_path(cities, graph, n)
 
     if result:
         print("Cammino Hamiltoniano trovato:", result)
     else:
         print("Nessun cammino Hamiltoniano trovato.")
+    
+    print(f"Tempo di esecuzione del solver: {execution_time:.4f} secondi")
