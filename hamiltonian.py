@@ -1,6 +1,7 @@
 from z3 import *
 import time  # Importa il modulo per misurare il tempo
 
+
 def hamiltonian_path(cities, graph, n):
     """
     Risolve il problema del cammino Hamiltoniano per un grafo dato di città.
@@ -48,14 +49,15 @@ def hamiltonian_path(cities, graph, n):
         execution_time = time.time() - start_time  # Calcola il tempo di esecuzione
         return None, execution_time
 
+
 # Esempio di utilizzo
 if __name__ == "__main__":
     # Definizione delle città (in questo caso 5 città)
     cities = ["Roma", "Milano", "Firenze", "Napoli", "Venezia"]
 
     # Definizione del grafo come lista di archi (le connessioni tra le città)
-    graph = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0),  # Connessioni cicliche
-             (0, 2), (1, 3), (2, 4), (0, 3), (1, 4)]  # Connessioni aggiuntive
+    graph = [(0, 2), (1, 3), (2, 4), (0, 3), (1, 4),
+             (0, 4), (2, 3)]  # Connessioni
 
     # Numero di città
     n = len(cities)
@@ -67,5 +69,5 @@ if __name__ == "__main__":
         print("Cammino Hamiltoniano trovato:", result)
     else:
         print("Nessun cammino Hamiltoniano trovato.")
-    
+
     print(f"Tempo di esecuzione del solver: {execution_time:.4f} secondi")
