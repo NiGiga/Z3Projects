@@ -13,7 +13,7 @@ def hamiltonian_path(cities, graph, n):
 
     Returns:
         tuple: Una tupla contenente la sequenza di città che rappresenta il cammino Hamiltoniano e il tempo di esecuzione, se esiste.
-        None: Se il cammino non esiste.
+        tuple: (None, execution_time) se il cammino non esiste.
     """
     # Crea un Solver
     s = Solver()
@@ -43,7 +43,7 @@ def hamiltonian_path(cities, graph, n):
         model = s.model()
         path = [model.eval(position[i]).as_long() for i in range(n)]
         execution_time = time.time() - start_time  # Calcola il tempo di esecuzione
-        return execution_time  # Restituisci sia il cammino che il tempo
+        return path, execution_time  # Restituisci sia il cammino che il tempo
     else:
         execution_time = time.time() - start_time  # Calcola il tempo di esecuzione
         return None, execution_time  # Restituisci None e il tempo
@@ -63,7 +63,7 @@ if __name__ == "__main__":
     for i in range(n):
         graph.append((i, (i + 1) % n))  # Connessione tra la città i e la città (i+1)%n (ciclo)
 
-    # Aggiungi connessioni casuali tra alcune città per esempio
+    # Aggiungi connessioni casuali tra alcune città
     for _ in range(n // 10):  # Aggiungi circa un decimo delle città con connessioni casuali
         u = random.randint(0, n - 1)
         v = random.randint(0, n - 1)
